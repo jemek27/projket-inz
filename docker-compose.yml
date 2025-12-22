@@ -4,7 +4,7 @@ services:
   # ==========================================
   postgres:
     build:
-      context: ./postgres
+      context: ./docker/postgres
       dockerfile: Dockerfile
     container_name: hdised-postgres
     restart: unless-stopped
@@ -30,7 +30,7 @@ services:
   # ==========================================
   hdised-client:
     build:
-      context: ..
+      context: .
       dockerfile: HDiSED-mcp-client/Dockerfile
     container_name: hdised-client
     restart: unless-stopped
@@ -93,7 +93,7 @@ services:
   # ==========================================
   frontend:
     build:
-      context: ../inz-front
+      context: ./inz-front
       dockerfile: Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-/}

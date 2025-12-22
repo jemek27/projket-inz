@@ -4,24 +4,22 @@
 
 ### 1. Skopiuj plik konfiguracyjny
 ```bash
-cp docker/.env.example docker/.env
+cp .env.example .env
 ```
 
 ### 2. Dostosuj konfigurację (opcjonalnie)
-Edytuj plik `docker/.env` według potrzeb, np.:
+Edytuj plik `.env` według potrzeb, np.:
 - `OLLAMA_BASE_URL` - URL do Ollama/LLM API
 - `OLLAMA_MODEL` - nazwa modelu LLM
 - `POSTGRES_PASSWORD` - hasło do bazy danych
 
 ### 3. Uruchom kontenery
 ```bash
-cd docker
 docker-compose up -d --build
 ```
 
 ### 4. Sprawdź status
 ```bash
-cd docker
 docker-compose ps
 docker-compose logs -f
 ```
@@ -113,42 +111,34 @@ docker-compose logs -f
 ### Uruchomienie
 ```bash
 # Wszystkie usługi
-cd docker
 docker-compose up -d --build
 
 # Tylko baza danych
-cd docker
 docker-compose up -d postgres
 
 # Bez frontendu (dla developmentu frontendu lokalnie)
-cd docker
 docker-compose up -d postgres hdised-client
 ```
 
 ### Logi
 ```bash
 # Wszystkie usługi
-cd docker
 docker-compose logs -f
 
 # Konkretna usługa
-cd docker
 docker-compose logs -f hdised-client
 ```
 
 ### Zatrzymanie
 ```bash
-cd docker
 docker-compose down
 
 # Z usunięciem wolumenów (UWAGA: usuwa dane!)
-cd docker
 docker-compose down -v
 ```
 
 ### Przebudowa
 ```bash
-cd docker
 docker-compose up -d --build --force-recreate
 ```
 
@@ -161,7 +151,7 @@ Jeśli Ollama jest zainstalowana na maszynie hosta, kontenery automatycznie się
 Możesz dodać Ollama jako dodatkowy kontener:
 
 ```yaml
-# Dodaj do docker/docker-compose.yml
+# Dodaj do docker-compose.yml
 ollama:
   image: ollama/ollama
   container_name: ollama
@@ -177,7 +167,7 @@ volumes:
   ollama_data:
 ```
 
-Następnie zmień w `docker/.env`:
+Następnie zmień w `.env`:
 ```
 OLLAMA_BASE_URL=http://ollama:11434
 ```
@@ -190,28 +180,23 @@ OLLAMA_BASE_URL=http://ollama:11434
 curl http://localhost:11434/api/version
 
 # Sprawdź logi
-cd docker
 docker-compose logs hdised-client | grep -i ollama
 ```
 
 ### Problemy z bazą danych
 ```bash
 # Sprawdź status postgres
-cd docker
 docker-compose exec postgres pg_isready
 
 # Sprawdź logi
-cd docker
 docker-compose logs postgres
 ```
 
 ### Czyszczenie
 ```bash
 # Usuń wszystkie kontenery i wolumeny
-cd docker
 docker-compose down -v
 
 # Usuń obrazy
-cd docker
 docker-compose down --rmi all
 ```
