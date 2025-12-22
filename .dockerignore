@@ -1,0 +1,23 @@
+# Docker files
+.env
+
+# Node modules
+inz-front/node_modules/
+
+# Build outputs
+HDiSED-mcp-client/HDiSED-client/target/
+TAKE-MCP/target/
+inz-front/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

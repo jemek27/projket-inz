@@ -1,0 +1,124 @@
+services:
+  # ==========================================
+  # PostgreSQL with pgvector
+  # ==========================================
+  postgres:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    container_name: hdised-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      POSTGRES_DB: ${POSTGRES_DB:-hdised_client_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-hdised_client_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - hdised-network
+
+  # ==========================================
+  # HDiSED-client (Backend with TAKE-MCP embedded)
+  # ==========================================
+  hdised-client:
+    build:
+      context: ..
+      dockerfile: HDiSED-mcp-client/Dockerfile
+    container_name: hdised-client
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Spring profile
+      SPRING_PROFILES_ACTIVE: docker
+      
+      # Ollama Configuration
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-gpt-oss:20b}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-embeddinggemma:latest}
+      
+      # HDiSED-client Database Configuration
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_INTERNAL_PORT:-5432}
+      POSTGRES_DB: ${POSTGRES_DB:-hdised_client_db}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      
+      # TAKE-MCP Database Configuration (for MCP server subprocess)
+      TAKE_POSTGRES_HOST: ${TAKE_POSTGRES_HOST:-postgres}
+      TAKE_POSTGRES_PORT: ${TAKE_POSTGRES_INTERNAL_PORT:-5432}
+      TAKE_POSTGRES_DB: ${TAKE_POSTGRES_DB:-takerestaurant}
+      TAKE_POSTGRES_USER: ${TAKE_POSTGRES_USER:-admin}
+      TAKE_POSTGRES_PASSWORD: ${TAKE_POSTGRES_PASSWORD:-admin}
+      
+      # MCP Configuration
+      MCP_JAR_PATH: ${MCP_JAR_PATH:-/app/mcp-servers/TAKE-MCP.jar}
+      
+      # RAG Configuration
+      RAG_ENABLED: ${RAG_ENABLED:-true}
+      RAG_TOP_K: ${RAG_TOP_K:-3}
+      RAG_SIMILARITY_THRESHOLD: ${RAG_SIMILARITY_THRESHOLD:-0.7}
+      
+      # Chat Memory Configuration
+      CHAT_MEMORY_WINDOW_SIZE: ${CHAT_MEMORY_WINDOW_SIZE:-20}
+      
+      # Server Configuration
+      SERVER_PORT: ${BACKEND_PORT:-8081}
+    ports:
+      - "${BACKEND_PORT:-8081}:8081"
+    volumes:
+      - hdised_logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/chat/tools/client"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - hdised-network
+
+  # ==========================================
+  # Frontend (React + Nginx)
+  # ==========================================
+  frontend:
+    build:
+      context: ../inz-front
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/}
+    container_name: hdised-frontend
+    restart: unless-stopped
+    depends_on:
+      hdised-client:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    networks:
+      - hdised-network
+
+# ==========================================
+# Networks
+# ==========================================
+networks:
+  hdised-network:
+    driver: bridge
+
+# ==========================================
+# Volumes
+# ==========================================
+volumes:
+  postgres_data:
+    driver: local
+  hdised_logs:
+    driver: local
