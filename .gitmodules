@@ -1,0 +1,9 @@
+[submodule "HDiSED-mcp-client"]
+	path = HDiSED-mcp-client
+	url = https://github.com/jemek27/HDiSED-mcp-client.git
+[submodule "TAKE-MCP"]
+	path = TAKE-MCP
+	url = https://github.com/jemek27/TAKE-MCP.git
+[submodule "inz-front"]
+	path = inz-front
+	url = https://github.com/jemek27/inz-front.git
