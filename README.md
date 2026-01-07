@@ -1,1 +1,3 @@
-"# projket-inz" 
+# Projket inżynierski 
+
+## Uruchomienie
