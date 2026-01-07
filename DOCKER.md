@@ -12,6 +12,7 @@ Edytuj plik `.env` według potrzeb, np.:
 - `OLLAMA_BASE_URL` - URL do Ollama/LLM API
 - `OLLAMA_MODEL` - nazwa modelu LLM
 - `POSTGRES_PASSWORD` - hasło do bazy danych
+- `LLM_PROVIDER` - ollama lub groq
 
 ### 3. Uruchom kontenery
 ```bash
